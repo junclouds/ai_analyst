@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 分析师</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        #question {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #40a9ff;
+        }
+        .result-area {
+            margin-top: 20px;
+        }
+        #answer {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        #visualization {
+            margin-top: 20px;
+            height: 400px;
+        }
+        .loading {
+            display: none;
+            margin: 20px 0;
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI 分析师</h1>
+        <div class="input-area">
+            <input type="text" id="question" placeholder="请输入您的问题...">
+            <button onclick="askQuestion()">提问</button>
+        </div>
+        <div class="loading" id="loading">正在思考中...</div>
+        <div class="result-area">
+            <h3>回答：</h3>
+            <div id="answer"></div>
+            <div id="visualization"></div>
+        </div>
+    </div>
+
+    <script>
+        let chart = null;
+
+        async function askQuestion() {
+            const question = document.getElementById('question').value;
+            if (!question) return;
+
+            // 显示加载状态
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('answer').textContent = '';
+            if (chart) {
+                chart.dispose();
+                chart = null;
+            }
+
+            try {
+                const response = await axios.post('/api/v1/qa', {
+                    question: question
+                });
+
+                // 显示答案
+                document.getElementById('answer').textContent = response.data.answer;
+
+                // 如果有可视化数据，显示图表
+                if (response.data.visualization) {
+                    const chartDom = document.getElementById('visualization');
+                    chart = echarts.init(chartDom);
+                    chart.setOption(response.data.visualization);
+                }
+            } catch (error) {
+                document.getElementById('answer').textContent = `错误：${error.response?.data?.detail || error.message}`;
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // 支持回车提问
+        document.getElementById('question').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                askQuestion();
+            }
+        });
+    </script>
+</body>
+</html> 
