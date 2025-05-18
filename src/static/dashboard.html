@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI数据科学家 仪表盘 - 数据科学平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3a86ff;
+            --primary-dark: #2667ff;
+            --primary-light: #8ecae6;
+            --secondary: #7209b7;
+            --accent: #4361ee;
+            --success: #06d6a0;
+            --warning: #ffd166;
+            --danger: #ef476f;
+            --dark: #023047;
+            --darker: #051923;
+            --darkest: #010c16;
+            --gray: #8d99ae;
+            --light: #f8f9fa;
+            --lighter: #f9fafb;
+            --border: #e2e8f0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background-color: var(--lighter);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* 侧边栏样式 */
+        .sidebar {
+            width: 250px;
+            background-color: var(--darkest);
+            color: var(--light);
+            position: fixed;
+            height: 100vh;
+            padding: 1rem 0;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        
+        .logo-container {
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--light);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        
+        .nav-menu {
+            list-style: none;
+            padding: 0 1rem;
+        }
+        
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            color: var(--gray);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+        }
+        
+        .nav-link.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        /* 主内容区域样式 */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-name {
+            font-weight: 600;
+        }
+        
+        .user-role {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        /* 卡片和网格样式 */
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .card:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .trend-up {
+            color: var(--success);
+        }
+        
+        .trend-down {
+            color: var(--danger);
+        }
+        
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .project-card {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .project-title {
+            font-weight: 600;
+        }
+        
+        .project-date {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        .project-description {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            flex-grow: 1;
+        }
+        
+        .project-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+        
+        .project-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background-color: rgba(6, 214, 160, 0.1);
+            color: var(--success);
+        }
+        
+        .status-pending {
+            background-color: rgba(255, 209, 102, 0.1);
+            color: var(--warning);
+        }
+        
+        .status-completed {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--accent);
+        }
+        
+        .project-members {
+            display: flex;
+        }
+        
+        .member-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: -8px;
+            border: 2px solid white;
+        }
+        
+        .member-avatar:first-child {
+            margin-left: 0;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .view-all {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .view-all:hover {
+            text-decoration: underline;
+        }
+        
+        .bg-primary {
+            background-color: var(--primary);
+        }
+        
+        .bg-success {
+            background-color: var(--success);
+        }
+        
+        .bg-warning {
+            background-color: var(--warning);
+        }
+        
+        .bg-danger {
+            background-color: var(--danger);
+        }
+        
+        /* 数据集与模型性能部分样式 */
+        .two-column-grid {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .datasets-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .datasets-table th,
+        .datasets-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .datasets-table th {
+            font-weight: 600;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .datasets-table tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.01);
+        }
+        
+        .datasets-table td {
+            vertical-align: middle;
+        }
+        
+        .dataset-name {
+            font-weight: 500;
+        }
+        
+        .dataset-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .dataset-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(58, 134, 255, 0.1);
+            color: var(--primary);
+            margin-right: 12px;
+        }
+        
+        .dataset-size {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .models-list {
+            list-style: none;
+        }
+        
+        .model-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .model-item:last-child {
+            border-bottom: none;
+        }
+        
+        .model-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .model-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .model-type {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+        
+        .model-metrics {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .model-accuracy {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .accuracy-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        .accuracy-value {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .high-accuracy {
+            color: var(--success);
+        }
+        
+        .medium-accuracy {
+            color: var(--warning);
+        }
+        
+        .low-accuracy {
+            color: var(--danger);
+        }
+        
+        /* 圆环进度条 */
+        .progress-ring {
+            position: relative;
+            width: 50px;
+            height: 50px;
+        }
+        
+        .progress-ring-circle {
+            transform: rotate(-90deg);
+            transform-origin: center;
+            stroke-dasharray: 283;
+            stroke-linecap: round;
+            fill: transparent;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+        }
+        
+        .btn i {
+            margin-right: 6px;
+        }
+        
+        /* 自然语言分析区域样式 */
+        .ai-analysis-section {
+            margin-bottom: 2rem;
+        }
+        
+        .analysis-card {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .analysis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .ai-input-container {
+            display: flex;
+            align-items: center;
+            background-color: var(--lighter);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .ai-input-container:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.1);
+        }
+        
+        .ai-input-icon {
+            color: var(--primary);
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+        }
+        
+        .ai-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            color: var(--dark);
+            padding: 0.25rem 0;
+        }
+        
+        .ai-submit {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .ai-submit:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .suggestions-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        
+        .suggestion-tag {
+            background-color: rgba(58, 134, 255, 0.1);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .suggestion-tag:hover {
+            background-color: rgba(58, 134, 255, 0.2);
+        }
+        
+        .analysis-results {
+            margin-top: 2rem;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        .analysis-results.active {
+            display: block;
+            opacity: 1;
+        }
+        
+        .result-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        
+        .result-tab {
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            color: var(--gray);
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .result-tab.active {
+            color: var(--primary);
+        }
+        
+        .result-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary);
+        }
+        
+        .result-content {
+            display: none;
+        }
+        
+        .result-content.active {
+            display: block;
+        }
+        
+        .visualization-placeholder {
+            background-color: rgba(58, 134, 255, 0.05);
+            border: 1px dashed rgba(58, 134, 255, 0.3);
+            border-radius: 8px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: var(--primary);
+        }
+        
+        .placeholder-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .placeholder-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        .loader {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 5;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .loader.active {
+            display: flex;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(58, 134, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .projects-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .two-column-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                width: 0;
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .sidebar.active {
+                width: 250px;
+                transform: translateX(0);
+            }
+            
+            .toggle-sidebar {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="logo-container">
+                <a href="/" class="logo"><i class="fas fa-brain"></i>AI数据科学家</a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">
+                        <i class="fas fa-home"></i>
+                        <span>仪表盘</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-database"></i>
+                        <span>数据集</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        <span>分析</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-robot"></i>
+                        <span>模型</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-cog"></i>
+                        <span>设置</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+        
+        <!-- 主内容区域 -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">仪表盘</h1>
+                <div class="user-profile">
+                    <div class="user-avatar">LJ</div>
+                    <div class="user-info">
+                        <div class="user-name">李军</div>
+                        <div class="user-role">数据科学家</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 仪表盘内容将在这里添加 -->
+            <div class="dashboard-content">
+                <!-- 统计卡片 -->
+                <div class="stats-grid">
+                    <div class="card stat-card">
+                        <div class="card-header">
+                            <div class="card-icon bg-primary">
+                                <i class="fas fa-project-diagram"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value">14</div>
+                        <div class="stat-label">活跃项目</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i> 12.5%
+                        </div>
+                    </div>
+                    
+                    <div class="card stat-card">
+                        <div class="card-header">
+                            <div class="card-icon bg-success">
+                                <i class="fas fa-database"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value">32</div>
+                        <div class="stat-label">数据集</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i> 8.2%
+                        </div>
+                    </div>
+                    
+                    <div class="card stat-card">
+                        <div class="card-header">
+                            <div class="card-icon bg-warning">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value">7</div>
+                        <div class="stat-label">部署模型</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i> 5.3%
+                        </div>
+                    </div>
+                    
+                    <div class="card stat-card">
+                        <div class="card-header">
+                            <div class="card-icon bg-danger">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value">89%</div>
+                        <div class="stat-label">平均准确率</div>
+                        <div class="stat-trend trend-down">
+                            <i class="fas fa-arrow-down"></i> 2.1%
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 最近项目 -->
+                <div class="section-header">
+                    <h2 class="section-title">最近项目</h2>
+                    <a href="#" class="view-all">查看全部 <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="projects-grid">
+                    <div class="card project-card">
+                        <div class="project-header">
+                            <div class="project-title">销售预测分析</div>
+                            <div class="project-date">更新于 2天前</div>
+                        </div>
+                        <div class="project-description">
+                            利用历史销售数据，建立预测模型，优化季度销售目标和库存管理策略。
+                        </div>
+                        <div class="project-footer">
+                            <div class="project-status status-active">进行中</div>
+                            <div class="project-members">
+                                <div class="member-avatar">JL</div>
+                                <div class="member-avatar">WX</div>
+                                <div class="member-avatar">ZY</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card project-card">
+                        <div class="project-header">
+                            <div class="project-title">客户细分模型</div>
+                            <div class="project-date">更新于 5天前</div>
+                        </div>
+                        <div class="project-description">
+                            基于客户行为数据，构建客户价值和潜力矩阵，辅助精准营销决策。
+                        </div>
+                        <div class="project-footer">
+                            <div class="project-status status-pending">审核中</div>
+                            <div class="project-members">
+                                <div class="member-avatar">LJ</div>
+                                <div class="member-avatar">CH</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card project-card">
+                        <div class="project-header">
+                            <div class="project-title">供应链优化</div>
+                            <div class="project-date">更新于 1周前</div>
+                        </div>
+                        <div class="project-description">
+                            通过时序分析和异常检测，降低供应链成本，提高配送效率。
+                        </div>
+                        <div class="project-footer">
+                            <div class="project-status status-completed">已完成</div>
+                            <div class="project-members">
+                                <div class="member-avatar">LJ</div>
+                                <div class="member-avatar">TW</div>
+                                <div class="member-avatar">YL</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 数据集和模型性能 -->
+                <div class="two-column-grid">
+                    <!-- 最近数据集 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">数据集状态</h3>
+                            <a href="#" class="btn btn-outline btn-sm">
+                                <i class="fas fa-plus"></i> 导入数据
+                            </a>
+                        </div>
+                        
+                        <table class="datasets-table">
+                            <thead>
+                                <tr>
+                                    <th>数据集</th>
+                                    <th>记录数</th>
+                                    <th>状态</th>
+                                    <th>最后更新</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="dataset-info">
+                                            <div class="dataset-icon">
+                                                <i class="fas fa-table"></i>
+                                            </div>
+                                            <div>
+                                                <div class="dataset-name">电商交易数据</div>
+                                                <div class="dataset-size">CSV • 2.4 GB</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>1,245,672</td>
+                                    <td><span class="project-status status-active">已清洗</span></td>
+                                    <td>昨天</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="dataset-info">
+                                            <div class="dataset-icon">
+                                                <i class="fas fa-chart-bar"></i>
+                                            </div>
+                                            <div>
+                                                <div class="dataset-name">用户行为日志</div>
+                                                <div class="dataset-size">JSON • 5.7 GB</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>3,784,219</td>
+                                    <td><span class="project-status status-pending">处理中</span></td>
+                                    <td>3天前</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="dataset-info">
+                                            <div class="dataset-icon">
+                                                <i class="fas fa-file-alt"></i>
+                                            </div>
+                                            <div>
+                                                <div class="dataset-name">调查问卷结果</div>
+                                                <div class="dataset-size">XLSX • 456 MB</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>28,547</td>
+                                    <td><span class="project-status status-completed">已分析</span></td>
+                                    <td>1周前</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="dataset-info">
+                                            <div class="dataset-icon">
+                                                <i class="fas fa-database"></i>
+                                            </div>
+                                            <div>
+                                                <div class="dataset-name">CRM客户数据</div>
+                                                <div class="dataset-size">SQL • 1.2 GB</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>145,320</td>
+                                    <td><span class="project-status status-active">已清洗</span></td>
+                                    <td>2周前</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 模型性能 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">模型性能指标</h3>
+                            <a href="#" class="btn btn-outline btn-sm">
+                                <i class="fas fa-cog"></i> 管理
+                            </a>
+                        </div>
+                        
+                        <ul class="models-list">
+                            <li class="model-item">
+                                <div class="model-info">
+                                    <div class="model-name">销售预测 - XGBoost</div>
+                                    <div class="model-type">回归 • 上线时间: 15天</div>
+                                </div>
+                                <div class="model-metrics">
+                                    <div class="progress-ring">
+                                        <svg width="50" height="50">
+                                            <circle r="20" cx="25" cy="25" stroke="#e6e6e6" stroke-width="4" />
+                                            <circle class="progress-ring-circle" r="20" cx="25" cy="25" stroke="#06d6a0" stroke-width="4" stroke-dashoffset="56.6" /> <!-- 80% -->
+                                        </svg>
+                                        <div class="progress-text">92%</div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="model-item">
+                                <div class="model-info">
+                                    <div class="model-name">客户流失预警</div>
+                                    <div class="model-type">分类 • 上线时间: 7天</div>
+                                </div>
+                                <div class="model-metrics">
+                                    <div class="progress-ring">
+                                        <svg width="50" height="50">
+                                            <circle r="20" cx="25" cy="25" stroke="#e6e6e6" stroke-width="4" />
+                                            <circle class="progress-ring-circle" r="20" cx="25" cy="25" stroke="#ffd166" stroke-width="4" stroke-dashoffset="99" /> <!-- 65% -->
+                                        </svg>
+                                        <div class="progress-text">84%</div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="model-item">
+                                <div class="model-info">
+                                    <div class="model-name">商品推荐系统</div>
+                                    <div class="model-type">协同过滤 • 上线时间: 30天</div>
+                                </div>
+                                <div class="model-metrics">
+                                    <div class="progress-ring">
+                                        <svg width="50" height="50">
+                                            <circle r="20" cx="25" cy="25" stroke="#e6e6e6" stroke-width="4" />
+                                            <circle class="progress-ring-circle" r="20" cx="25" cy="25" stroke="#06d6a0" stroke-width="4" stroke-dashoffset="42.45" /> <!-- 85% -->
+                                        </svg>
+                                        <div class="progress-text">95%</div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="model-item">
+                                <div class="model-info">
+                                    <div class="model-name">情感分析模型</div>
+                                    <div class="model-type">NLP • 上线时间: 2天</div>
+                                </div>
+                                <div class="model-metrics">
+                                    <div class="progress-ring">
+                                        <svg width="50" height="50">
+                                            <circle r="20" cx="25" cy="25" stroke="#e6e6e6" stroke-width="4" />
+                                            <circle class="progress-ring-circle" r="20" cx="25" cy="25" stroke="#ffd166" stroke-width="4" stroke-dashoffset="113" /> <!-- 60% -->
+                                        </svg>
+                                        <div class="progress-text">75%</div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- 自然语言分析区域 -->
+                <div class="ai-analysis-section">
+                    <div class="section-header">
+                        <h2 class="section-title">自然语言分析</h2>
+                    </div>
+                    
+                    <div class="card analysis-card">
+                        <div class="loader">
+                            <div class="spinner"></div>
+                        </div>
+                        
+                        <div class="analysis-header">
+                            <h3 class="card-title">使用自然语言进行数据探索</h3>
+                        </div>
+                        
+                        <div class="ai-input-container">
+                            <div class="ai-input-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <input type="text" class="ai-input" id="analysis-input" placeholder="输入数据分析问题，例如：'分析上个季度销售额与营销支出的相关性'" />
+                            <button class="ai-submit" id="submit-analysis">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="suggestions-container">
+                            <div class="suggestion-tag">分析月度销售趋势</div>
+                            <div class="suggestion-tag">计算不同渠道的ROI</div>
+                            <div class="suggestion-tag">预测下个季度的客户增长率</div>
+                            <div class="suggestion-tag">找出客户流失的主要原因</div>
+                        </div>
+                        
+                        <div class="analysis-results" id="analysis-results">
+                            <div class="result-tabs">
+                                <div class="result-tab active" data-tab="summary">摘要分析</div>
+                                <div class="result-tab" data-tab="visualization">数据可视化</div>
+                                <div class="result-tab" data-tab="insights">关键洞察</div>
+                                <div class="result-tab" data-tab="raw">原始数据</div>
+                            </div>
+                            
+                            <div class="result-content active" id="summary">
+                                <div class="visualization-placeholder">
+                                    <div class="placeholder-icon">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div class="placeholder-text">输入分析问题以获取结果</div>
+                                </div>
+                            </div>
+                            
+                            <div class="result-content" id="visualization">
+                                <div class="visualization-placeholder">
+                                    <div class="placeholder-icon">
+                                        <i class="fas fa-chart-pie"></i>
+                                    </div>
+                                    <div class="placeholder-text">输入分析问题以生成可视化</div>
+                                </div>
+                            </div>
+                            
+                            <div class="result-content" id="insights">
+                                <div class="visualization-placeholder">
+                                    <div class="placeholder-icon">
+                                        <i class="fas fa-lightbulb"></i>
+                                    </div>
+                                    <div class="placeholder-text">输入分析问题以发现洞察</div>
+                                </div>
+                            </div>
+                            
+                            <div class="result-content" id="raw">
+                                <div class="visualization-placeholder">
+                                    <div class="placeholder-icon">
+                                        <i class="fas fa-table"></i>
+                                    </div>
+                                    <div class="placeholder-text">输入分析问题以查看原始数据</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 侧边栏切换
+            const toggleSidebar = document.querySelector('.toggle-sidebar');
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            
+            if (toggleSidebar) {
+                toggleSidebar.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    mainContent.classList.toggle('sidebar-collapsed');
+                });
+            }
+            
+            // 自然语言分析
+            const analysisInput = document.getElementById('analysis-input');
+            const submitAnalysis = document.getElementById('submit-analysis');
+            const analysisResults = document.getElementById('analysis-results');
+            const loader = document.querySelector('.loader');
+            const suggestionTags = document.querySelectorAll('.suggestion-tag');
+            
+            // 建议标签点击事件
+            suggestionTags.forEach(tag => {
+                tag.addEventListener('click', function() {
+                    analysisInput.value = this.textContent;
+                    analysisInput.focus();
+                });
+            });
+            
+            // 提交分析请求
+            submitAnalysis.addEventListener('click', function() {
+                if (analysisInput.value.trim() === '') return;
+                
+                // 显示加载动画
+                loader.classList.add('active');
+                
+                // 模拟API调用
+                setTimeout(function() {
+                    // 隐藏加载动画
+                    loader.classList.remove('active');
+                    
+                    // 显示结果
+                    analysisResults.classList.add('active');
+                    
+                    // 更新占位符内容（实际应用中这里会更新为真实数据）
+                    document.querySelector('#summary .visualization-placeholder .placeholder-text').textContent = 
+                        `"${analysisInput.value}" 的分析结果将显示在这里。`;
+                    document.querySelector('#visualization .visualization-placeholder .placeholder-text').textContent = 
+                        `"${analysisInput.value}" 的可视化图表将显示在这里。`;
+                    document.querySelector('#insights .visualization-placeholder .placeholder-text').textContent = 
+                        `"${analysisInput.value}" 的关键洞察将显示在这里。`;
+                    document.querySelector('#raw .visualization-placeholder .placeholder-text').textContent = 
+                        `"${analysisInput.value}" 的原始数据将显示在这里。`;
+                    
+                }, 1500);
+            });
+            
+            // 回车键提交
+            analysisInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    submitAnalysis.click();
+                }
+            });
+            
+            // 标签页切换
+            const resultTabs = document.querySelectorAll('.result-tab');
+            
+            resultTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // 移除所有标签的活动状态
+                    resultTabs.forEach(t => t.classList.remove('active'));
+                    
+                    // 激活当前标签
+                    this.classList.add('active');
+                    
+                    // 显示对应的内容
+                    const tabId = this.getAttribute('data-tab');
+                    document.querySelectorAll('.result-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // 模拟进度环初始化
+            document.querySelectorAll('.progress-ring-circle').forEach(circle => {
+                const percent = circle.parentNode.nextElementSibling.textContent;
+                const value = parseFloat(percent);
+                const circumference = 2 * Math.PI * 20; // 2πr
+                const offset = circumference - (value / 100) * circumference;
+                circle.style.strokeDashoffset = offset;
+                
+                // 根据值设置颜色
+                if (value >= 90) {
+                    circle.style.stroke = '#06d6a0'; // 绿色
+                } else if (value >= 75) {
+                    circle.style.stroke = '#ffd166'; // 黄色
+                } else {
+                    circle.style.stroke = '#ef476f'; // 红色
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

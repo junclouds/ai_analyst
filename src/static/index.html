@@ -1,127 +1,1397 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 分析师</title>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <title>AI数据科学家 - 企业级数据洞察平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #3a86ff;
+            --primary-dark: #2667ff;
+            --primary-light: #8ecae6;
+            --secondary: #7209b7;
+            --accent: #4361ee;
+            --success: #06d6a0;
+            --warning: #ffd166;
+            --dark: #023047;
+            --darker: #051923;
+            --darkest: #010c16;
+            --gray: #8d99ae;
+            --light: #f8f9fa;
+            --neon-blue: #00f2ff;
+            --neon-purple: #b300ff;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+        
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(58, 134, 255, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(58, 134, 255, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(58, 134, 255, 0);
+            }
+        }
+        
+        @keyframes typing {
+            from {
+                width: 0;
+            }
+            to {
+                width: 100%;
+            }
+        }
+        
+        @keyframes blink {
+            from, to {
+                border-color: transparent;
+            }
+            50% {
+                border-color: var(--neon-blue);
+            }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--darkest);
+            color: var(--light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.05;
+            background-image: url('https://i.imgur.com/8PaYbDc.png');
+            background-size: cover;
+            z-index: -1;
+        }
+        
+        .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 0 1.5rem;
         }
-        .container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        
+        header {
+            padding: 1.2rem 0;
+            position: sticky;
+            top: 0;
+            background-color: rgba(1, 12, 22, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
-        .input-area {
+        
+        .header-container {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            justify-content: space-between;
+            align-items: center;
         }
-        #question {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--light);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
         }
-        button {
-            padding: 10px 20px;
-            background-color: #1890ff;
+        
+        .logo i {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 0;
+            font-size: 0.95rem;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .btn {
+            background: var(--primary);
             color: white;
             border: none;
+            padding: 0.6rem 1.5rem;
             border-radius: 4px;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 16px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.95rem;
         }
-        button:hover {
-            background-color: #40a9ff;
+        
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
         }
-        .result-area {
-            margin-top: 20px;
-        }
-        #answer {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 4px;
-            white-space: pre-wrap;
-        }
-        #visualization {
-            margin-top: 20px;
-            height: 400px;
-        }
-        .loading {
-            display: none;
-            margin: 20px 0;
+        
+        /* 顶部通知栏 */
+        .announcement-bar {
+            background: linear-gradient(90deg, var(--primary-dark), var(--secondary));
+            color: white;
             text-align: center;
-            color: #666;
+            padding: 0.5rem 1rem;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .announcement-bar a {
+            color: white;
+            text-decoration: underline;
+            margin-left: 0.5rem;
+        }
+        
+        .announcement-close {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(58, 134, 255, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(58, 134, 255, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(58, 134, 255, 0);
+            }
+        }
+        
+        @keyframes typing {
+            from {
+                width: 0;
+            }
+            to {
+                width: 100%;
+            }
+        }
+        
+        @keyframes blink {
+            from, to {
+                border-color: transparent;
+            }
+            50% {
+                border-color: var(--neon-blue);
+            }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background-color: var(--darker);
+            color: var(--light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.15;
+            background-image: url('https://i.imgur.com/8PaYbDc.png');
+            background-size: cover;
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        header {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 0;
+            background-color: rgba(5, 25, 35, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--light);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            color: var(--neon-blue);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            color: var(--neon-blue);
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        .btn {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 0.9rem 2rem;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(58, 134, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.6s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(58, 134, 255, 0.4);
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .hero {
+            padding: 8rem 0 5rem;
+            text-align: center;
+            position: relative;
+            background-color: var(--darkest);
+            overflow: hidden;
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            color: white;
+        }
+        
+        .hero p {
+            font-size: 1.5rem;
+            color: var(--light);
+            margin-bottom: 2.5rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            opacity: 0.9;
+        }
+        
+        .hero-btn {
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 4px;
+        }
+        
+        .hero-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .particle {
+            position: absolute;
+            display: block;
+            width: 6px;
+            height: 6px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: float 15s infinite;
+            opacity: 0.3;
+        }
+        
+        /* 聊天界面样式 */
+        .chat-container {
+            max-width: 1000px;
+            margin: 3rem auto;
+            display: flex;
+            flex-direction: row-reverse;
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+        
+        .chat-interface {
+            flex: 1;
+            background: rgba(1, 12, 22, 0.6);
+            border-radius: 12px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .chat-title {
+            font-size: 1.4rem;
+            color: white;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .quick-questions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .quick-question {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .quick-question:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        
+        .chat-input {
+            display: flex;
+            margin-top: auto;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px 0 0 8px;
+            outline: none;
+            color: var(--light);
+            font-size: 1rem;
+        }
+        
+        .chat-input button {
+            padding: 0 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+        }
+        
+        .conversation-history {
+            flex: 1;
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 1rem;
+            background: rgba(1, 12, 22, 0.4);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .message {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .message-content {
+            padding: 1rem;
+            border-radius: 8px;
+            max-width: 90%;
+            line-height: 1.5;
+        }
+        
+        .user-message {
+            text-align: right;
+        }
+        
+        .user-message .message-content {
+            background: var(--primary);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 0;
+        }
+        
+        .ai-message .message-content {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--light);
+            border-bottom-left-radius: 0;
+        }
+        
+        .features {
+            padding: 6rem 0;
+            background-color: var(--darker);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .features::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(circle at center, var(--dark) 0%, transparent 70%);
+            opacity: 0.5;
+            z-index: 0;
+        }
+        
+        .features h2 {
+            font-size: 2.8rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .features-subtitle {
+            text-align: center;
+            color: var(--light);
+            max-width: 700px;
+            margin: 0 auto 3rem;
+            font-size: 1.2rem;
+            opacity: 0.8;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 2.5rem 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-dark), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .feature-card:hover::before {
+            opacity: 0.1;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--light);
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .feature-card h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            border-radius: 3px;
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+        
+        .feature-card p {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.7;
+        }
+        
+        /* 页脚样式 */
+        footer {
+            background-color: rgba(1, 12, 22, 0.95);
+            padding: 4rem 0 2rem;
+            margin-top: 4rem;
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 2fr;
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+        
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--light);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .footer-logo i {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        
+        .footer-brand p {
+            color: var(--gray);
+            line-height: 1.7;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .social-links a {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .social-links a:hover {
+            background-color: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .footer-links {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+        
+        .footer-section h3 {
+            color: var(--light);
+            margin-bottom: 1.2rem;
+            font-size: 1.1rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        
+        .footer-section h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: var(--primary);
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section li {
+            margin-bottom: 0.7rem;
+        }
+        
+        .footer-section a {
+            color: var(--gray);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .footer-section a:hover {
+            color: var(--primary);
+            padding-left: 5px;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        /* 打字指示器动画 */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            display: inline-block;
+            animation: bounce 1.5s infinite ease-in-out;
+        }
+        
+        .typing-indicator span:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+        
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: translateY(0);
+                opacity: 0.6;
+            }
+            40% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+        
+        /* 使用场景标签页样式 */
+        .use-cases {
+            padding: 6rem 0;
+            background: linear-gradient(0deg, var(--darkest), var(--dark));
+        }
+        
+        .use-case-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .use-case-tab {
+            padding: 0.8rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .use-case-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .use-case-content {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 2rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+        
+        .use-case-content h3 {
+            color: var(--primary);
+            margin-bottom: 1.2rem;
+        }
+        
+        .use-case-content ul {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+        
+        .use-case-content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* 架构部分样式 */
+        .architecture {
+            padding: 6rem 0;
+        }
+        
+        .arch-diagram {
+            margin-top: 3rem;
+        }
+        
+        .arch-layers {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .arch-layer {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .arch-layer:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .layer-title {
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .layer-desc {
+            color: var(--gray);
+            line-height: 1.6;
+        }
+        
+        /* Call to Action 样式 */
+        .cta {
+            text-align: center;
+            padding: 6rem 0;
+            background: linear-gradient(135deg, var(--primary-dark), var(--secondary));
+        }
+        
+        .cta h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+        
+        .cta p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            margin-bottom: 2.5rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .cta .btn {
+            background: white;
+            color: var(--primary-dark);
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .cta .btn:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 992px) {
+            .hero h1 {
+                font-size: 3.5rem;
+            }
+            
+            .chat-container {
+                flex-direction: column;
+            }
+            
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .footer-links {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .quick-questions {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-links {
+                grid-template-columns: 1fr;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>AI 分析师</h1>
-        <div class="input-area">
-            <input type="text" id="question" placeholder="请输入您的问题...">
-            <button onclick="askQuestion()">提问</button>
+    <div class="announcement-bar">
+        <i class="fas fa-sparkles"></i> 欢迎使用AI数据科学家平台
+        <button class="announcement-close">×</button>
+    </div>
+    
+    <header>
+        <div class="container header-container">
+            <a href="/" class="logo"><i class="fas fa-brain"></i>AI数据科学家</a>
+            <nav class="nav-links">
+                <a href="#features">Solutions</a>
+                <a href="#use-cases">Customers</a>
+                <a href="#architecture">Resources</a>
+                <a href="#cta">About</a>
+            </nav>
+            <a href="/static/dashboard.html" class="btn">Try now</a>
         </div>
-        <div class="loading" id="loading">正在思考中...</div>
-        <div class="result-area">
-            <h3>回答：</h3>
-            <div id="answer"></div>
-            <div id="visualization"></div>
+    </header>
+    
+    <section class="hero">
+        <div class="hero-particles">
+            <!-- 将在JS中生成粒子 -->
+        </div>
+        <div class="container hero-content">
+            <h1>Ask More<br>From Your Data</h1>
+            <p>Insights at your fingertips with AI-powered analytics</p>
+            <a href="/static/dashboard.html" class="btn hero-btn">Try now</a>
+        </div>
+    </section>
+    
+    <div class="container" id="demo">
+        <div class="chat-container">
+            <div class="chat-interface">
+                <h3 class="chat-title">How can AI数据科学家 help you today?</h3>
+                
+                <div class="quick-questions">
+                    <div class="quick-question">How am I doing in each state?</div>
+                    <div class="quick-question">Quarterly sales analysis playbook</div>
+                    <div class="quick-question">What is the distribution of account territories?</div>
+                    <div class="quick-question">Let's add our Top 10 Competitors</div>
+                </div>
+                
+                <div class="chat-input">
+                    <input type="text" placeholder="Ask AI数据科学家..." id="user-input">
+                    <button id="send-btn"><i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+            
+            <div class="conversation-history">
+                <div class="message-thread">
+                    <div class="message ai-message">
+                        <div class="message-content">
+                            您好，我是您的 AI数据科学家 助手。今天有什么数据问题需要我帮助解答？
+                        </div>
+                    </div>
+                    <div class="message user-message">
+                        <div class="message-content">
+                            本季度各渠道的 ROI 如何？
+                        </div>
+                    </div>
+                    <div class="message ai-message">
+                        <div class="message-content">
+                            根据分析，本季度各渠道 ROI 排名如下：<br>
+                            1. 搜索引擎广告：287%<br>
+                            2. 社交媒体：215%<br>
+                            3. 电子邮件营销：189%<br>
+                            4. 内容营销：156%<br>
+                            5. 联盟营销：132%<br><br>
+                            
+                            总体来看，搜索引擎广告表现最佳，比上季度提升了12%。您需要查看详细的渠道投资回报分析吗？
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
+    
+    <section class="features" id="features">
+        <div class="container">
+            <h2>强大功能，助您决策</h2>
+            <p class="features-subtitle">利用最先进的AI技术，提供全方位数据洞察，帮助您在瞬息万变的市场中领先一步</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-comments-alt"></i></div>
+                    <h3>即时问答</h3>
+                    <p>使用自然语言提问，秒级获得准确答案和可视化图表。无需编写复杂查询或等待报表。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-lightbulb"></i></div>
+                    <h3>主动洞察</h3>
+                    <p>AI 智能 Agent 持续监控数据，自动发现异常和机会，主动推送关键指标预警。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-database"></i></div>
+                    <h3>全数据源接入</h3>
+                    <p>支持 Snowflake、Databricks、BigQuery 等多种数据源，打破数据孤岛，统一分析视图。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>企业级安全</h3>
+                    <p>提供行/列级权限控制，满足 SOC 2 Type II 认证要求，保障数据安全。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="use-cases" id="use-cases">
+        <div class="container">
+            <h2>适用于各种业务场景</h2>
+            <div class="use-case-tabs">
+                <div class="use-case-tab active" onclick="showTab('sales')">销售与收入</div>
+                <div class="use-case-tab" onclick="showTab('marketing')">营销分析</div>
+                <div class="use-case-tab" onclick="showTab('customer')">客户成功</div>
+                <div class="use-case-tab" onclick="showTab('supply')">供应链</div>
+            </div>
+            <div class="use-case-content" id="sales">
+                <h3>销售与收入分析</h3>
+                <p>通过自然语言快速分析销售漏斗、查看收入预测、识别商机和风险区域。AI 分析师可以自动监控销售业绩，识别异常趋势，并提供针对性建议。</p>
+                <p><strong>示例问题：</strong></p>
+                <ul>
+                    <li>本季度各区域销售业绩如何？</li>
+                    <li>企业客户的平均销售周期是多长？</li>
+                    <li>哪些风险账户可能无法在本季度完成交易？</li>
+                </ul>
+            </div>
+            <div class="use-case-content" id="marketing" style="display: none;">
+                <h3>营销效果分析</h3>
+                <p>深入了解各营销渠道的表现，优化预算分配，提高投资回报率。AI 分析师能够自动监控广告系列性能，并在效果下滑时立即提醒。</p>
+                <p><strong>示例问题：</strong></p>
+                <ul>
+                    <li>本月各渠道获客成本是多少？</li>
+                    <li>哪个广告系列的转化率最高？</li>
+                    <li>社交媒体投放的 ROI 与上季度相比如何变化？</li>
+                </ul>
+            </div>
+            <div class="use-case-content" id="customer" style="display: none;">
+                <h3>客户成功管理</h3>
+                <p>预测客户流失风险，分析产品使用情况，提高客户满意度和留存率。AI 分析师会主动发现使用率下降的客户，帮助及时干预。</p>
+                <p><strong>示例问题：</strong></p>
+                <ul>
+                    <li>哪些客户有流失风险？</li>
+                    <li>企业客户的平均使用频率是多少？</li>
+                    <li>我们最成功的客户如何使用我们的产品？</li>
+                </ul>
+            </div>
+            <div class="use-case-content" id="supply" style="display: none;">
+                <h3>供应链优化</h3>
+                <p>识别瓶颈、优化库存，提高供应链效率。AI 分析师能够预测需求波动，帮助减少库存成本并改善生产计划。</p>
+                <p><strong>示例问题：</strong></p>
+                <ul>
+                    <li>哪些产品的库存周转率最低？</li>
+                    <li>供应商交付延迟的主要原因是什么？</li>
+                    <li>下个季度的需求预测与库存计划如何？</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+    
+    <section class="architecture" id="architecture">
+        <div class="container">
+            <h2>技术架构</h2>
+            <div class="arch-diagram">
+                <div class="arch-layers">
+                    <div class="arch-layer layer-frontend">
+                        <div class="layer-title">前端层</div>
+                        <div class="layer-desc">React + JavaScript SDK，支持嵌入式部署，提供自然语言交互界面和数据可视化</div>
+                    </div>
+                    <div class="arch-layer layer-middleware">
+                        <div class="layer-title">中台层</div>
+                        <div class="layer-desc">NLU/NLP 引擎基于大型语言模型与知识织物，实现准确的 Text-to-SQL 转译；Agent 服务负责主动洞察与规则执行</div>
+                    </div>
+                    <div class="arch-layer layer-data">
+                        <div class="layer-title">数据层</div>
+                        <div class="layer-desc">支持 Snowflake、Databricks、BigQuery 等多种数据源接入，提供统一访问层和权限校验</div>
+                    </div>
+                    <div class="arch-layer layer-security">
+                        <div class="layer-title">安全与运维</div>
+                        <div class="layer-desc">零信任架构、行列级权限控制、SOC 2 Type II 认证、审计日志与密钥管理</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="cta" id="cta">
+        <div class="container">
+            <h2>开启数据驱动决策的新时代</h2>
+            <p>让 AI数据科学家 成为您的数据智囊团，帮助您更快做出更优决策</p>
+            <a href="/static/dashboard.html" class="btn">立即开始</a>
+        </div>
+    </section>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="footer-logo"><i class="fas fa-brain"></i> AI数据科学家</a>
+                    <p>Advanced AI-powered data analytics platform for enterprise insights.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h3>Products</h3>
+                        <ul>
+                            <li><a href="#features">Features</a></li>
+                            <li><a href="#use-cases">Use Cases</a></li>
+                            <li><a href="#architecture">Architecture</a></li>
+                            <li><a href="/api/docs">API Docs</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h3>Resources</h3>
+                        <ul>
+                            <li><a href="#">Documentation</a></li>
+                            <li><a href="#">Blog</a></li>
+                            <li><a href="#">Case Studies</a></li>
+                            <li><a href="#">Developer Community</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h3>Company</h3>
+                        <ul>
+                            <li><a href="#">About Us</a></li>
+                            <li><a href="#">Contact</a></li>
+                            <li><a href="#">Careers</a></li>
+                            <li><a href="#">Partners</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2025 AI数据科学家. All rights reserved.
+            </div>
+        </div>
+    </footer>
+    
     <script>
-        let chart = null;
-
-        async function askQuestion() {
-            const question = document.getElementById('question').value;
-            if (!question) return;
-
-            // 显示加载状态
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('answer').textContent = '';
-            if (chart) {
-                chart.dispose();
-                chart = null;
-            }
-
-            try {
-                const response = await axios.post('/api/v1/qa', {
-                    question: question
-                });
-
-                // 显示答案
-                document.getElementById('answer').textContent = response.data.answer;
-
-                // 如果有可视化数据，显示图表
-                if (response.data.visualization) {
-                    const chartDom = document.getElementById('visualization');
-                    chart = echarts.init(chartDom);
-                    chart.setOption(response.data.visualization);
-                }
-            } catch (error) {
-                document.getElementById('answer').textContent = `错误：${error.response?.data?.detail || error.message}`;
-            } finally {
-                document.getElementById('loading').style.display = 'none';
+        // 创建粒子背景
+        function createParticles() {
+            const heroParticles = document.querySelector('.hero-particles');
+            const particleCount = 40;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('span');
+                particle.classList.add('particle');
+                
+                // 随机位置
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                
+                // 随机大小
+                const size = Math.random() * 6 + 2;
+                
+                // 随机动画延迟
+                const delay = Math.random() * 10;
+                const duration = Math.random() * 20 + 10;
+                
+                // 设置样式
+                particle.style.left = `${posX}%`;
+                particle.style.top = `${posY}%`;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                particle.style.animationDelay = `${delay}s`;
+                particle.style.animationDuration = `${duration}s`;
+                
+                heroParticles.appendChild(particle);
             }
         }
-
-        // 支持回车提问
-        document.getElementById('question').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                askQuestion();
+        
+        // 页面加载时创建粒子
+        document.addEventListener('DOMContentLoaded', createParticles);
+        
+        // 快速问题点击功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const quickQuestions = document.querySelectorAll('.quick-question');
+            
+            quickQuestions.forEach(question => {
+                question.addEventListener('click', function() {
+                    const userInput = document.getElementById('user-input');
+                    userInput.value = this.textContent;
+                    // 聚焦输入框
+                    userInput.focus();
+                });
+            });
+            
+            // 关闭通知栏
+            const closeBtn = document.querySelector('.announcement-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    document.querySelector('.announcement-bar').style.display = 'none';
+                });
             }
         });
+        
+        // 聊天功能
+        document.getElementById('send-btn').addEventListener('click', function() {
+            const userInput = document.getElementById('user-input');
+            const chatMessages = document.querySelector('.conversation-history');
+            
+            if (userInput.value.trim() === '') return;
+            
+            // 添加用户消息
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user-message';
+            userMessage.innerHTML = `<div class="message-content">${userInput.value}</div>`;
+            
+            // 添加到对话历史
+            chatMessages.appendChild(userMessage);
+            
+            // 滚动到底部
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // 模拟 API 调用
+            fetch('/api/v1/qa', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ question: userInput.value }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // 添加 AI 回复
+                const aiMessage = document.createElement('div');
+                aiMessage.className = 'message ai-message';
+                aiMessage.innerHTML = `<div class="message-content">${data.answer || "我正在学习中，暂时无法回答这个问题。"}</div>`;
+                chatMessages.appendChild(aiMessage);
+                
+                // 滚动到最新消息
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                // 添加错误消息
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'message ai-message';
+                errorMessage.innerHTML = `<div class="message-content">抱歉，服务暂时不可用，请稍后再试。</div>`;
+                chatMessages.appendChild(errorMessage);
+                
+                // 滚动到最新消息
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
+            
+            // 清空输入
+            userInput.value = '';
+        });
+        
+        // 回车发送消息
+        document.getElementById('user-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('send-btn').click();
+            }
+        });
+        
+        // 用于展示场景标签页的功能
+        function showTab(tabId) {
+            // 隐藏所有内容面板
+            document.querySelectorAll('.use-case-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // 移除所有标签页的活动状态
+            document.querySelectorAll('.use-case-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的内容面板
+            document.getElementById(tabId).style.display = 'block';
+            
+            // 激活选中的标签
+            document.querySelector(`.use-case-tab[onclick="showTab('${tabId}')"]`).classList.add('active');
+        }
     </script>
 </body>
 </html> 

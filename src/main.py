@@ -4,15 +4,20 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.staticfiles import StaticFiles
 from prometheus_client import make_asgi_app
+import asyncio
 
 from api.router import api_router
 from utils.config import settings
-from utils.logger import setup_logging
+from utils.logger import setup_logging, get_logger
 from handlers.error_handlers import setup_exception_handlers
 from utils.rate_limiter import RateLimitMiddleware
+# 暂时注释掉示例数据初始化相关导入
+# from utils.sample_data import initialize_sample_data
+# from retriever.chroma_retriever import ChromaRetriever
 
 # 设置日志
-logger = setup_logging()
+setup_logging()  # 只调用设置函数，不赋值
+logger = get_logger(__name__)  # 使用get_logger获取logger
 
 app = FastAPI(
     title=settings.app.name,
@@ -53,11 +58,23 @@ app.mount("/metrics", metrics_app)
 async def health_check():
     return {"status": "healthy"}
 
+# 简化启动事件
+@app.on_event("startup")
+async def startup_event():
+    """应用启动时执行的操作"""
+    logger.info("应用启动")
+
 if __name__ == "__main__":
     import uvicorn
+    import os
+    
+    # 添加当前目录到 Python 路径
+    import sys
+    sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + "/.."))
+    
     uvicorn.run(
-        "main:app",
+        "src.main:app",
         host=settings.api.host,
-        port=settings.api.port,
+        port=8080,  # 使用8080端口
         reload=settings.app.debug,
     ) 

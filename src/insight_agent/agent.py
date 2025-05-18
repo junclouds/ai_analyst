@@ -1,15 +1,14 @@
 from typing import Dict, Any, List, Optional
-import asyncio
 from datetime import datetime
-
-from llm.base import BaseLLM
+import asyncio
 from utils.logger import get_logger
 from utils.notification import NotificationManager
+from llm.base import BaseLLM
 
 logger = get_logger(__name__)
 
 class InsightAgent:
-    """主动洞察Agent类"""
+    """洞察Agent实现类，负责数据监控与主动分析"""
     
     def __init__(
         self,
@@ -17,94 +16,98 @@ class InsightAgent:
         notification_manager: NotificationManager,
         config: Dict[str, Any]
     ):
+        """初始化Agent"""
         self.llm = llm
         self.notification_manager = notification_manager
         self.config = config
-        self.running = False
-        self._initialize_prompts()
+        self.scan_interval = config.get("scan_interval_minutes", 60)
     
-    def _initialize_prompts(self):
-        """初始化提示模板"""
-        self.insight_prompt = """分析以下数据，找出重要的异常模式、趋势变化或需要关注的指标：
-
-数据概览:
+    async def start_monitoring(self):
+        """启动监控任务"""
+        logger.info("启动数据监控任务")
+        while True:
+            try:
+                # 执行数据监控与分析
+                insights = await self.analyze_data()
+                
+                # 如果有重要洞察，发送通知
+                if insights and self._should_notify(insights):
+                    await self.send_notifications(insights)
+                
+                # 等待到下一个扫描周期
+                await asyncio.sleep(self.scan_interval * 60)
+                
+            except Exception as e:
+                logger.error(f"数据监控任务出错: {str(e)}")
+                await asyncio.sleep(60)  # 出错后等待1分钟再重试
+    
+    def _should_notify(self, insights: Dict[str, Any]) -> bool:
+        """判断是否应该发送通知"""
+        # 简单实现：如果有洞察内容就通知
+        return len(insights.get("insights", "").strip()) > 0
+    
+    async def send_notifications(self, insights: Dict[str, Any]):
+        """发送通知"""
+        try:
+            message = f"新的数据洞察 ({insights['timestamp']}):\n\n{insights['insights']}"
+            
+            # 发送通知
+            channels = self.config.get("alert_channels", [])
+            for channel in channels:
+                await self.notification_manager.send(
+                    channel=channel.get("type", "email"),
+                    recipients=channel.get("recipients", []),
+                    subject="AI分析师 - 数据洞察提醒",
+                    message=message
+                )
+                
+            logger.info(f"已发送洞察通知到 {len(channels)} 个渠道")
+            
+        except Exception as e:
+            logger.error(f"发送通知时出错: {str(e)}")
+    
+    async def analyze_data(
+        self,
+        data_summary: str = "",
+        historical_trends: str = ""
+    ) -> Dict[str, Any]:
+        """分析数据并生成洞察"""
+        try:
+            timestamp = datetime.now().isoformat()
+            
+            # 如果没有提供数据，这里应该是从数据源获取
+            if not data_summary:
+                data_summary = "当前无可用数据"
+            
+            if not historical_trends:
+                historical_trends = "无历史趋势数据"
+            
+            # 构建提示
+            prompt = f"""作为AI分析师，请基于以下信息提供业务洞察：
+            
+数据概况:
 {data_summary}
 
 历史趋势:
 {historical_trends}
 
-请提供：
-1. 发现的关键洞察
-2. 可能的原因分析
-3. 建议的行动方案
+请分析上述数据，提供关键洞察、潜在机会和需要关注的风险。"""
 
-如果发现严重异常，请特别标注。"""
-    
-    async def analyze_data(
-        self,
-        data_summary: str,
-        historical_trends: str
-    ) -> Dict[str, Any]:
-        """分析数据并生成洞察"""
-        prompt = self.insight_prompt.format(
-            data_summary=data_summary,
-            historical_trends=historical_trends
-        )
-        
-        response = await self.llm.generate(prompt=prompt)
-        
-        return {
-            "timestamp": datetime.now().isoformat(),
-            "insights": response,
-            "data_summary": data_summary,
-            "historical_trends": historical_trends
-        }
-    
-    async def _scan_loop(self):
-        """定期扫描数据的主循环"""
-        while self.running:
-            try:
-                # 获取最新数据
-                data_summary = "TODO: 实现数据获取逻辑"
-                historical_trends = "TODO: 实现历史趋势获取逻辑"
-                
-                # 分析数据
-                insights = await self.analyze_data(
-                    data_summary=data_summary,
-                    historical_trends=historical_trends
-                )
-                
-                # 发送通知
-                if self._should_notify(insights):
-                    await self.notification_manager.send_notification(
-                        title="新的数据洞察",
-                        content=insights["insights"],
-                        level="info"
-                    )
-                
-                # 等待下一次扫描
-                await asyncio.sleep(
-                    self.config["scan_interval_minutes"] * 60
-                )
-                
-            except Exception as e:
-                logger.error(f"Error in scan loop: {str(e)}")
-                await asyncio.sleep(60)  # 错误后等待1分钟再重试
-    
-    def _should_notify(self, insights: Dict[str, Any]) -> bool:
-        """判断是否需要发送通知"""
-        # TODO: 实现通知触发逻辑
-        return True
-    
-    async def start(self):
-        """启动Agent"""
-        if not self.running:
-            self.running = True
-            asyncio.create_task(self._scan_loop())
-            logger.info("Insight Agent started")
-    
-    async def stop(self):
-        """停止Agent"""
-        if self.running:
-            self.running = False
-            logger.info("Insight Agent stopped") 
+            # 生成洞察
+            insights = await self.llm.generate(prompt)
+            
+            return {
+                "timestamp": timestamp,
+                "insights": insights,
+                "data_summary": data_summary,
+                "historical_trends": historical_trends
+            }
+            
+        except Exception as e:
+            logger.error(f"生成数据洞察时出错: {str(e)}")
+            return {
+                "timestamp": datetime.now().isoformat(),
+                "insights": f"无法生成洞察: {str(e)}",
+                "data_summary": data_summary,
+                "historical_trends": historical_trends
+            } 
