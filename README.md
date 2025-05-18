@@ -1,53 +1,41 @@
-# AI Analyst - 企业级个人化 AI 分析师系统
+# AI 分析师
 
-## 项目概述
-AI Analyst 是一个基于大语言模型的智能数据分析系统，支持自然语言问答、主动数据洞察和多源数据接入。系统具备以下核心特性：
+一个企业级的个性化 AI 分析助手系统，基于大语言模型和向量数据库构建。
 
-- 🤖 支持多种大语言模型（OpenAI、Claude、Gemini）
-- 📊 接入多种数据源（Snowflake、BigQuery、Databricks）
-- 💡 主动数据洞察与异常预警
-- 🔍 基于文档和结构化数据的智能问答
-- 🚀 高性能与可扩展性设计
-- 🔒 企业级安全与权限控制
+## 功能特点
 
-## 项目结构
-```
-ai_analyst/
-├── config/                 # 配置文件目录
-│   └── config.yaml        # 主配置文件
-├── src/                   # 源代码目录
-│   ├── api/              # API 路由与接口定义
-│   ├── llm/              # 语言模型封装
-│   ├── retriever/        # 数据检索模块
-│   ├── qa_engine/        # 问答引擎核心
-│   ├── insight_agent/    # 主动洞察 Agent
-│   ├── utils/            # 工具函数
-│   ├── handlers/         # 异常处理
-│   └── main.py          # 应用入口
-├── data/                 # 数据存储目录
-├── examples/             # 示例代码
-├── notebooks/            # Jupyter 笔记本
-├── tests/               # 测试用例
-├── Dockerfile           # 容器化配置
-├── requirements.txt     # 依赖包列表
-└── README.md           # 项目文档
-```
+- 🤖 智能问答：基于文档上下文的准确回答
+- 📊 数据分析：支持多种数据源的智能分析
+- 🔍 知识库管理：文档的添加、检索和更新
+- 🚀 高性能：异步处理和缓存优化
+- 🛡️ 安全可靠：完整的错误处理和日志记录
+
+## 技术栈
+
+- Python 3.11+
+- FastAPI
+- LangChain
+- ChromaDB
+- Ollama / OpenAI
+- Redis (可选)
 
 ## 快速开始
 
 ### 环境要求
-- Python 3.11+
-- Redis
-- Vector Store (ChromaDB)
+
+- Python 3.11 或更高版本
+- Ollama (用于本地 LLM 部署)
+- Redis (可选，用于缓存)
 
 ### 安装
-1. 克隆仓库
+
+1. 克隆仓库：
 ```bash
-git clone https://github.com/your-org/ai-analyst.git
-cd ai-analyst
+git clone https://github.com/junclouds/ai_analyst.git
+cd ai_analyst
 ```
 
-2. 创建虚拟环境
+2. 创建并激活虚拟环境：
 ```bash
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
@@ -55,70 +43,109 @@ source venv/bin/activate  # Linux/Mac
 .\venv\Scripts\activate  # Windows
 ```
 
-3. 安装依赖
+3. 安装依赖：
 ```bash
 pip install -r requirements.txt
 ```
 
-4. 配置环境变量
+4. 配置环境变量：
 ```bash
 cp .env.example .env
-# 编辑 .env 文件，填入必要的配置信息
+# 编辑 .env 文件，设置必要的环境变量
 ```
 
 ### 运行
-1. 启动服务
+
+1. 启动服务：
 ```bash
-uvicorn src.main:app --reload
+python src/main.py
 ```
 
-2. 访问 API 文档
+2. 访问 API 文档：
 ```
 http://localhost:8000/docs
 ```
 
+## API 接口
+
+### 问答接口
+
+- POST `/api/v1/qa`
+  - 输入：问题文本和可选的聊天历史
+  - 输出：AI 回答和相关上下文
+
+### 文档管理
+
+- POST `/api/v1/documents`
+  - 添加新文档到知识库
+  - 支持元数据标注
+
+### 数据分析
+
+- GET `/api/v1/insights`
+  - 获取数据分析洞察
+  - 支持自定义分析维度
+
+## 配置说明
+
+主要配置文件位于 `config/config.yaml`，包括：
+
+- API 设置
+- LLM 配置
+- 向量存储设置
+- 缓存配置
+- 安全设置
+
 ## 开发指南
 
-### 添加新的语言模型
-1. 在 `src/llm/` 目录下创建新的模型实现类
-2. 继承 `BaseLLM` 类并实现所有抽象方法
-3. 在配置文件中添加新模型的配置项
+### 项目结构
 
-### 添加新的数据源
-1. 在 `src/retriever/` 目录下创建新的检索器实现
-2. 继承 `BaseRetriever` 类并实现所有抽象方法
-3. 在配置文件中添加新数据源的连接信息
-
-### 自定义主动洞察规则
-1. 修改 `src/insight_agent/agent.py` 中的分析逻辑
-2. 在配置文件中更新洞察规则和通知阈值
-
-## API 文档
-详细的 API 文档请访问运行时的 Swagger UI：`http://localhost:8000/docs`
-
-## 测试
-运行单元测试：
-```bash
-pytest tests/
+```
+ai_analyst/
+├── config/             # 配置文件
+├── src/
+│   ├── api/           # API 路由
+│   ├── llm/           # LLM 模型封装
+│   ├── qa_engine/     # 问答引擎
+│   ├── retriever/     # 检索模块
+│   ├── utils/         # 工具函数
+│   └── main.py        # 入口文件
+├── tests/             # 测试用例
+└── data/              # 数据目录
 ```
 
+### 开发规范
+
+- 使用 Python 类型注解
+- 遵循 PEP 8 编码规范
+- 编写单元测试
+- 使用异步编程
+
 ## 部署
-1. 构建 Docker 镜像
+
+### Docker 部署
+
+1. 构建镜像：
 ```bash
 docker build -t ai-analyst .
 ```
 
-2. 运行容器
+2. 运行容器：
 ```bash
 docker run -d -p 8000:8000 ai-analyst
 ```
 
+### 生产环境配置
+
+- 使用 Gunicorn 作为 WSGI 服务器
+- 配置 NGINX 反向代理
+- 启用 Redis 缓存
+- 设置监控和告警
+
 ## 贡献指南
-1. Fork 项目
-2. 创建特性分支
-3. 提交变更
-4. 推送到分支
-5. 创建 Pull Request
+
+欢迎提交 Issue 和 Pull Request！
 
 ## 许可证
+
 MIT License 
